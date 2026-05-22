@@ -94,8 +94,8 @@ function renderTable() {
                     <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
                     <div class="race-icon" style="color:${race.color}">
                         ${race.isImage ? 
-                            `<img src="${race.icon}" class="race-image" alt="${race.name}">` : 
-                            race.icon}
+                        `<img src="${race.icon}" alt="${race.name}">` : 
+                        race.icon}
                 </div>
                     <div class="${nameClass}">${race.name}</div>
                     <div class="race-sub">${race.sub}</div>
