@@ -6,8 +6,6 @@
     <title>Forza Horizon 6 Rating Board</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
-    <!-- html2canvas для сохранения в картинку -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -20,16 +18,14 @@
     <button class="reset-btn" onclick="resetRatings()">Сбросить оценки</button>
     <button class="add-btn" onclick="addPlayer()">+ Добавить участника</button>
     <button class="add-race-btn" onclick="showAddRaceModal()">+ Добавить заезд</button>
-    <button class="save-btn" onclick="saveAsImage()">
-        Сохранить
-    </button>
+    <button class="save-btn" onclick="saveAsImage()">Сохранить</button>
 </div>
 
 <table class="board">
     <thead>
         <tr>
             <th>УЧАСТНИК</th>
-            <th>ВАРИАНТЫ ЗАЕЗДА<br><span style="font-size:14px;opacity:0.7;">(оценки от 1 до 5)</span></th>
+            <th id="races-header">ВАРИАНТЫ ЗАЕЗДА</th>
             <th ondblclick="editCategory(0, this)" id="cat-header-0">КУЗОВ</th>
             <th ondblclick="editCategory(1, this)" id="cat-header-1">ПОКРАСКА</th>
             <th ondblclick="editCategory(2, this)" id="cat-header-2">САЛОН</th>
@@ -67,23 +63,27 @@ let races = [];
 const playerColors = ["#ff2e88", "#ff9500", "#00bfff"];
 const body = document.getElementById("tableBody");
 
-// Получить текущий максимум
-function getMaxScore() {
-    return (races.length + 3) * 5;
-}
-
-// === Рендер ===
+// Рендер таблицы
 function renderTable() {
     body.innerHTML = "";
-    
+
     players.forEach((player, pIndex) => {
         const tr = document.createElement("tr");
         tr.id = `row-${pIndex}`;
         tr.style.borderLeft = `6px solid ${playerColors[pIndex % playerColors.length]}`;
 
+        let racesHTML = races.map((race, rIndex) => `
+            <div class="race-column">
+                <div class="race-name" style="color:${race.color || '#fff'}">
+                    ${race.icon || '🏁'} ${race.name}
+                </div>
+                <div class="stars" data-rating="0" data-race-index="${rIndex}"></div>
+            </div>
+        `).join('');
+
         tr.innerHTML = `
             <td><div class="player" ondblclick="editPlayerName(${pIndex}, this)">${player}</div></td>
-            <td><div class="races-grid"></div></td>
+            <td><div class="races-grid">${racesHTML}</div></td>
             <td><div class="stars" data-rating="0"></div></td>
             <td><div class="stars" data-rating="0"></div></td>
             <td><div class="stars" data-rating="0"></div></td>
@@ -102,6 +102,8 @@ function renderTable() {
 
 function createStarsInRow(pIndex) {
     const row = document.getElementById(`row-${pIndex}`);
+    if (!row) return;
+
     row.querySelectorAll(".stars").forEach(container => {
         container.innerHTML = "";
         for (let i = 1; i <= 5; i++) {
@@ -122,12 +124,15 @@ function createStarsInRow(pIndex) {
     });
 }
 
-// Сохранение как картинка
+function getMaxScore() {
+    return (races.length + 3) * 5;
+}
+
+// Сохранение как картинку
 async function saveAsImage() {
     const controls = document.querySelector('.controls');
     const originalDisplay = controls.style.display;
-    
-    controls.style.display = 'none'; // скрываем кнопки на скриншоте
+    controls.style.display = 'none';
 
     try {
         const canvas = await html2canvas(document.body, {
@@ -141,7 +146,6 @@ async function saveAsImage() {
         link.download = `Forza_Rating_Board_${new Date().toISOString().slice(0,10)}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-
     } catch (err) {
         alert('Ошибка при создании изображения 😔');
         console.error(err);
@@ -150,19 +154,11 @@ async function saveAsImage() {
     }
 }
 
-// Остальные функции
-function deleteRace(index) {
-    if (confirm(`Удалить заезд "${races[index].name}"?`)) {
-        races.splice(index, 1);
-        renderTable();
-        updateAllResults();
-    }
-}
-
+// === Модальное окно ===
 function showAddRaceModal() {
     const presetContainer = document.getElementById("presetRaces");
     presetContainer.innerHTML = "<p><strong>Готовые варианты:</strong></p>";
-    
+
     const presets = [
         {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88"},
         {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500"},
@@ -179,9 +175,9 @@ function showAddRaceModal() {
         btn.style.borderColor = preset.color;
         btn.onclick = () => {
             races.push(preset);
-            closeModal(); 
-            renderTable(); 
-            updateAllResults(); 
+            closeModal();
+            renderTable();
+            updateAllResults();
         };
         presetContainer.appendChild(btn);
     });
@@ -194,7 +190,7 @@ function addCustomRace() {
     if (name) {
         races.push({
             name: name.toUpperCase(),
-            sub: document.getElementById("customRaceSub").value.trim() || "Своя трасса",
+            sub: document.getElementById("customRaceSub").value.trim() || "",
             icon: "🏁",
             color: "#00bfff"
         });
@@ -210,11 +206,16 @@ function closeModal() {
     document.getElementById("customRaceSub").value = "";
 }
 
+// Обновление результатов
 function updateResult(pIndex) {
     const row = document.getElementById(`row-${pIndex}`);
     if (!row) return;
+
     let total = 0;
-    row.querySelectorAll(".stars").forEach(el => total += Number(el.dataset.rating || 0));
+    row.querySelectorAll(".stars").forEach(el => {
+        total += Number(el.dataset.rating || 0);
+    });
+
     document.getElementById(`result-${pIndex}`).innerHTML = `${total}<span class="max">/${getMaxScore()}</span>`;
     updateRanks();
 }
@@ -225,6 +226,7 @@ function updateAllResults() {
 }
 
 function updateRanks() {
+    // ... (оставил как было)
     document.querySelectorAll("tr").forEach(r => r.classList.remove("top-player"));
     let results = players.map((_, i) => {
         let total = 0;
@@ -234,22 +236,14 @@ function updateRanks() {
     });
 
     results.sort((a,b) => b.total - a.total);
-    const maxScore = results[0]?.total || 0;
-
-    if (maxScore > 0) {
-        const leaders = results.filter(r => r.total === maxScore);
-        if (leaders.length === 1) {
-            document.getElementById(`row-${leaders[0].index}`).classList.add("top-player");
-        }
-    }
-
     results.forEach((res, pos) => {
         const el = document.getElementById(`rank-${res.index}`);
         if (el) el.innerHTML = pos === 0 ? "🏆 1 место" : pos === 1 ? "🥈 2 место" : pos === 2 ? "🥉 3 место" : `${pos+1} место`;
     });
 }
 
-function editPlayerName(index, element) {
+// Остальные функции (edit, add, reset)
+function editPlayerName(index, element) { /* ... */ 
     const input = document.createElement("input");
     input.type = "text"; input.value = players[index]; input.className = "player-edit";
     input.onblur = () => { if(input.value.trim()) players[index] = input.value.trim(); renderTable(); updateAllResults(); };
@@ -283,13 +277,7 @@ function addPlayer() {
 function resetRatings() {
     document.querySelectorAll(".star").forEach(s => s.classList.remove("active"));
     document.querySelectorAll(".stars").forEach(s => s.dataset.rating = "0");
-    players.forEach((_, i) => {
-        const res = document.getElementById(`result-${i}`);
-        if(res) res.innerHTML = `0<span class="max">/${getMaxScore()}</span>`;
-        const rank = document.getElementById(`rank-${i}`);
-        if(rank) rank.innerHTML = "—";
-    });
-    updateRanks();
+    updateAllResults();
 }
 
 // Инициализация
