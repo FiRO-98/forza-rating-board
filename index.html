@@ -126,18 +126,28 @@ function createStarsInRow(pIndex) {
     const row = document.getElementById(`row-${pIndex}`);
     row.querySelectorAll(".stars").forEach(container => {
         container.innerHTML = "";
+        
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement("span");
             star.className = "star";
             star.innerHTML = "★";
             star.dataset.value = i;
+            
             star.addEventListener("click", () => {
-                container.querySelectorAll(".star").forEach(s => 
-                    s.classList.toggle("active", parseInt(s.dataset.value) <= i)
-                );
-                container.dataset.rating = i;
+                const rating = i;
+                
+                // Активируем нужное количество звёзд
+                container.querySelectorAll(".star").forEach(s => {
+                    s.classList.toggle("active", parseInt(s.dataset.value) <= rating);
+                });
+                
+                // Сохраняем рейтинг
+                container.dataset.rating = rating;
+                
+                // Обновляем результат
                 updateResult(pIndex);
             });
+            
             container.appendChild(star);
         }
     });
