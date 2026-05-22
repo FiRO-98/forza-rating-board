@@ -13,7 +13,7 @@
 
 ## 🚀 Как пользоваться
 
-1. Открой сайт: **[https://firo-98.github.io/forza-rating-board/](https://firo-98.github.io/forza-rating-board/)**
+1. Открой сайт: **[forza-rating-board](https://firo-98.github.io/forza-rating-board/)**
 2. Нажми **"+ Добавить участника"**
 3. Нажми **"+ Добавить заезд"** и выбирай из готовых вариантов или создавай свои
 4. Выставляй оценки от 1 до 5 звёзд
