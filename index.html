@@ -11,6 +11,7 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -19,9 +20,10 @@
 </div>
 
 <div class="controls">
-    <button class="reset-btn" onclick="resetRatings()">Сбросить оценки</button>
-    <button class="add-btn" onclick="addPlayer()">+ Добавить участника</button>
-    <button class="add-race-btn" onclick="showAddRaceModal()">+ Добавить заезд</button>
+    <button class="reset-btn" onclick="resetRatings()">🔄️ Сбросить оценки</button>
+    <button class="add-btn" onclick="addPlayer()">➕ Добавить участника</button>
+    <button class="add-race-btn" onclick="showAddRaceModal()">➕ Добавить заезд</button>
+    <button class="save-btn" onclick="saveAsImage()">💾 Сохранить результаты</button>
 </div>
 
 <table class="board">
@@ -289,6 +291,42 @@ function resetRatings() {
 renderTable();
 updateCategoryHeaders();
 updateAllResults();
+// Сохранение таблицы как картинки
+async function saveAsImage() {
+    const table = document.querySelector('.board');
+    const title = document.querySelector('.title');
+    
+    // Создаём временный контейнер, чтобы захватить заголовок + таблицу
+    const container = document.createElement('div');
+    container.style.padding = '30px';
+    container.style.background = 'linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95))';
+    container.style.width = 'fit-content';
+    container.style.margin = '0 auto';
+    
+    container.appendChild(title.cloneNode(true));
+    container.appendChild(table.cloneNode(true));
+    
+    document.body.appendChild(container);
+
+    try {
+        const canvas = await html2canvas(container, {
+            scale: 2,                    // качество (2 = хорошее)
+            useCORS: true,
+            backgroundColor: '#0a0a0a'
+        });
+
+        // Скачивание
+        const link = document.createElement('a');
+        link.download = `forza-rating-board-${new Date().toISOString().slice(0,10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+    } catch (err) {
+        alert('Ошибка при сохранении: ' + err.message);
+    } finally {
+        document.body.removeChild(container);
+    }
+}
 </script>
 </body>
 </html>
