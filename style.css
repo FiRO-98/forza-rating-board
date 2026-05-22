@@ -136,9 +136,13 @@ td {
 }
 
 .race-icon {
-    font-size: 38px;             /* немного уменьшил иконку */
-    margin-bottom: 4px;          /* сильно уменьшил отступ */
-    text-align: center;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    flex-shrink: 0;
 }
 
 /* Названия заездов — главное улучшение */
@@ -338,11 +342,12 @@ td {
     transform: scale(1.03);
 }
 
-.preset-icon {
-    width: 42px;
-    height: 42px;
+.preset-icon, .race-image {
+    width: 48px;
+    height: 48px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 10px;
+    margin-right: 8px;
 }
 
 .modal-input {
