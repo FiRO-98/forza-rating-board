@@ -166,21 +166,25 @@ function showAddRaceModal() {
     const presetContainer = document.getElementById("presetRaces");
     presetContainer.innerHTML = "<p><strong>Готовые варианты:</strong></p>";
     
-    const presets = [
-        {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88"},
-        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500"},
-        {name:"ДРИФТ", sub:"Трасса", icon:"💨", color:"#9b4dff"},
-        {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff"},
-        {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
-        {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00"},
-        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88"},
-        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500"},
-    ];
+const presets = [
+    {name:"СПРИНТ", sub:"Асфальт", icon:"sprint.png", color:"#ff2e88", isImage: true},
+    {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"offroad.png", color:"#ff9500", isImage: true},
+    {name:"ДРИФТ", sub:"Трасса", icon:"drift.png", color:"#9b4dff", isImage: true},
+    // и т.д.
+];
 
     presets.forEach(p => {
-        const btn = document.createElement("button");
-        btn.className = "preset-btn";
+    const btn = document.createElement("button");
+    btn.className = "preset-btn";
+    
+    if (p.isImage) {
+        btn.innerHTML = `
+            <img src="${p.icon}" alt="${p.name}" class="preset-icon">
+            ${p.name} <small>${p.sub}</small>
+        `;
+    } else {
         btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
+    }
         btn.onclick = () => { 
             races.push(p); 
             closeModal(); 
