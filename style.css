@@ -335,15 +335,23 @@ td {
 }
 
 /* Контейнер для иконки в пресете */
-.preset-btn .icon-container {
-    width: 72px;
-    height: 72px;
+.preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 12px 8px;
+    gap: 8px;
+}
+
+.icon-container {
+    width: 78px;
+    height: 78px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;        /* убираем тёмную рамку */
-    border: none;
-    border-radius: 12px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 14px;
     overflow: hidden;
 }
 
@@ -365,8 +373,15 @@ td {
     width: 68px;
     height: 68px;
     object-fit: contain;
-    border-radius: 10px;
-    margin-bottom: 8px;
+}
+
+.preset-emoji {
+    font-size: 42px;
+}
+
+.preset-text small {
+    opacity: 0.8;
+    font-size: 0.85em;
 }
 
 .modal-input {
