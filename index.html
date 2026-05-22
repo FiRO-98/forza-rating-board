@@ -7,10 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
-    <!-- Favicon -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="favicon.png">
+    <!-- html2canvas для сохранения в картинку -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -22,6 +20,9 @@
     <button class="reset-btn" onclick="resetRatings()">Сбросить оценки</button>
     <button class="add-btn" onclick="addPlayer()">+ Добавить участника</button>
     <button class="add-race-btn" onclick="showAddRaceModal()">+ Добавить заезд</button>
+    <button class="save-btn" onclick="saveAsImage()">
+        Сохранить
+    </button>
 </div>
 
 <table class="board">
@@ -61,8 +62,6 @@
 // Данные
 let players = ["Участник 1", "Участник 2", "Участник 3"];
 let categories = ["КУЗОВ", "ПОКРАСКА", "САЛОН"];
-
-// Начинаем с пустого списка заездов
 let races = [];
 
 const playerColors = ["#ff2e88", "#ff9500", "#00bfff"];
@@ -82,33 +81,14 @@ function renderTable() {
         tr.id = `row-${pIndex}`;
         tr.style.borderLeft = `6px solid ${playerColors[pIndex % playerColors.length]}`;
 
-        tr.innerHTML += `<td><div class="player" ondblclick="editPlayerName(${pIndex}, this)">${player}</div></td>`;
-
-        let racesHTML = '<div class="races-grid">';
-        races.forEach((race, rIndex) => {
-            const nameClass = race.name.length > 18 ? 'race-name long' : 'race-name';
-            racesHTML += `
-                <div class="race-block">
-                    <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
-                    <div class="race-icon" style="color:${race.color}">${race.icon}</div>
-                    <div class="${nameClass}">${race.name}</div>
-                    <div class="race-sub">${race.sub}</div>
-                    <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
-                </div>
-            `;
-        });
-        racesHTML += '</div>';
-        tr.innerHTML += `<td>${racesHTML}</td>`;
-
-        tr.innerHTML += `
-            <td><div class="stars category-stars" data-group="cat-0-${pIndex}"></div></td>
-            <td><div class="stars category-stars" data-group="cat-1-${pIndex}"></div></td>
-            <td><div class="stars category-stars" data-group="cat-2-${pIndex}"></div></td>
-        `;
-
-        tr.innerHTML += `
+        tr.innerHTML = `
+            <td><div class="player" ondblclick="editPlayerName(${pIndex}, this)">${player}</div></td>
+            <td><div class="races-grid"></div></td>
+            <td><div class="stars" data-rating="0"></div></td>
+            <td><div class="stars" data-rating="0"></div></td>
+            <td><div class="stars" data-rating="0"></div></td>
             <td>
-                <div class="result-box">
+                <div class="result-container">
                     <div class="result" id="result-${pIndex}">0<span class="max">/${getMaxScore()}</span></div>
                     <div class="rank" id="rank-${pIndex}">—</div>
                 </div>
@@ -130,9 +110,10 @@ function createStarsInRow(pIndex) {
             star.innerHTML = "★";
             star.dataset.value = i;
             star.addEventListener("click", () => {
-                container.querySelectorAll(".star").forEach(s => 
-                    s.classList.toggle("active", parseInt(s.dataset.value) <= i)
-                );
+                container.querySelectorAll(".star").forEach(s => s.classList.remove("active"));
+                for (let j = 0; j < i; j++) {
+                    container.querySelectorAll(".star")[j].classList.add("active");
+                }
                 container.dataset.rating = i;
                 updateResult(pIndex);
             });
@@ -141,7 +122,35 @@ function createStarsInRow(pIndex) {
     });
 }
 
-// Управление заездами
+// Сохранение как картинка
+async function saveAsImage() {
+    const controls = document.querySelector('.controls');
+    const originalDisplay = controls.style.display;
+    
+    controls.style.display = 'none'; // скрываем кнопки на скриншоте
+
+    try {
+        const canvas = await html2canvas(document.body, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#0a0a14',
+            logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = `Forza_Rating_Board_${new Date().toISOString().slice(0,10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+    } catch (err) {
+        alert('Ошибка при создании изображения 😔');
+        console.error(err);
+    } finally {
+        controls.style.display = originalDisplay;
+    }
+}
+
+// Остальные функции
 function deleteRace(index) {
     if (confirm(`Удалить заезд "${races[index].name}"?`)) {
         races.splice(index, 1);
@@ -161,16 +170,15 @@ function showAddRaceModal() {
         {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff"},
         {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
         {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00"},
-        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88"},
-        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500"},
     ];
 
-    presets.forEach(p => {
+    presets.forEach(preset => {
         const btn = document.createElement("button");
         btn.className = "preset-btn";
-        btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
-        btn.onclick = () => { 
-            races.push(p); 
+        btn.innerHTML = `${preset.icon} ${preset.name}<br><small>${preset.sub}</small>`;
+        btn.style.borderColor = preset.color;
+        btn.onclick = () => {
+            races.push(preset);
             closeModal(); 
             renderTable(); 
             updateAllResults(); 
@@ -202,7 +210,6 @@ function closeModal() {
     document.getElementById("customRaceSub").value = "";
 }
 
-// Остальные функции (update, edit и т.д.)
 function updateResult(pIndex) {
     const row = document.getElementById(`row-${pIndex}`);
     if (!row) return;
