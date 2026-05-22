@@ -92,7 +92,11 @@ function renderTable() {
             racesHTML += `
                 <div class="race-block">
                     <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
-                    <div class="race-icon" style="color:${race.color}">${race.icon}</div>
+                    <div class="race-icon" style="color:${race.color}">
+                        ${race.isImage ? 
+                            `<img src="${race.icon}" class="race-image" alt="${race.name}">` : 
+                            race.icon}
+                </div>
                     <div class="${nameClass}">${race.name}</div>
                     <div class="race-sub">${race.sub}</div>
                     <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
@@ -170,20 +174,22 @@ const presets = [
     {name:"СПРИНТ", sub:"Асфальт", icon:"sprint.jpg", color:"#ff2e88", isImage: true},
     {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"offroad.jpg", color:"#ff9500", isImage: true},
     {name:"ДРИФТ", sub:"Трасса", icon:"drift.jpg", color:"#9b4dff", isImage: true},
-    // и т.д.
+    // добавляй остальные по аналогии
+    {name:"ДРАГ", sub:"Прямая", icon:"🏁", color:"#00bfff"},           // оставляем эмодзи
+    {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
 ];
 
     presets.forEach(p => {
     const btn = document.createElement("button");
     btn.className = "preset-btn";
     
-    if (p.isImage) {
-        btn.innerHTML = `
-            <img src="${p.icon}" alt="${p.name}" class="preset-icon">
-            ${p.name} <small>${p.sub}</small>
+   if (p.isImage) {
+    btn.innerHTML = `
+        <img src="${p.icon}" class="preset-icon" alt="${p.name}">
+        ${p.name} <small>${p.sub}</small>
         `;
     } else {
-        btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
+    btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
     }
         btn.onclick = () => { 
             races.push(p); 
