@@ -320,9 +320,10 @@ td {
 }
 
 .preset-btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
     margin: 8px 0;
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
@@ -335,6 +336,13 @@ td {
 .preset-btn:hover {
     background: #ff2e88;
     transform: scale(1.03);
+}
+
+.preset-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 8px;
 }
 
 .modal-input {
