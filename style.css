@@ -377,3 +377,27 @@ td {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 255, 157, 0.4);
 }
+
+/* Цветные звёзды в зависимости от оценки */
+.stars[data-rating="1"] .star.active { color: #ff2e2e; }     /* 1 - Красный */
+.stars[data-rating="2"] .star.active { color: #ff8c00; }     /* 2 - Оранжевый */
+.stars[data-rating="3"] .star.active { color: #ffd700; }     /* 3 - Жёлтый */
+.stars[data-rating="4"] .star.active { color: #00bfff; }     /* 4 - Синий */
+.stars[data-rating="5"] .star.active { color: #00ff9d; }     /* 5 - Зелёный */
+
+/* Неактивные звёзды */
+.star {
+    color: #555;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.star.active {
+    filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Hover эффект */
+.star:hover {
+    transform: scale(1.2);
+}
