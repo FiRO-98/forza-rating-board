@@ -135,25 +135,10 @@ td {
     box-shadow: 0 10px 25px rgba(255, 46, 136, 0.25);
 }
 
-/* Стили для картинок в заездах */
-/* Иконки уже добавленных заездов в таблице */
 .race-icon {
-    width: 72px;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    overflow: hidden;
-    border-radius: 12px;
-}
-
-.race-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 0;
+    font-size: 38px;             /* немного уменьшил иконку */
+    margin-bottom: 4px;          /* сильно уменьшил отступ */
+    text-align: center;
 }
 
 /* Названия заездов — главное улучшение */
@@ -334,54 +319,22 @@ td {
     border: 2px solid #ff2e88;
 }
 
-/* Контейнер для иконки в пресете */
 .preset-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 12px 8px;
-    gap: 8px;
-}
-
-.icon-container {
-    width: 78px;
-    height: 78px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.08);
-    border-radius: 14px;
-    overflow: hidden;
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: white;
+    text-align: left;
+    cursor: pointer;
 }
 
 .preset-btn:hover {
     background: #ff2e88;
     transform: scale(1.03);
-}
-
-.race-image {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    border-radius: 10px;
-    margin-right: 8px;
-}
-
-/* Иконки в карточках пресетов (при добавлении заезда) */
-.preset-icon {
-    width: 68px;
-    height: 68px;
-    object-fit: contain;
-}
-
-.preset-emoji {
-    font-size: 42px;
-}
-
-.preset-text small {
-    opacity: 0.8;
-    font-size: 0.85em;
 }
 
 .modal-input {

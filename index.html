@@ -92,11 +92,7 @@ function renderTable() {
             racesHTML += `
                 <div class="race-block">
                     <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
-                    <div class="race-icon" style="color:${race.color}">
-                        ${race.isImage ? 
-                        `<img src="${race.icon}" alt="${race.name}">` : 
-                        race.icon}
-                </div>
+                    <div class="race-icon" style="color:${race.color}">${race.icon}</div>
                     <div class="${nameClass}">${race.name}</div>
                     <div class="race-sub">${race.sub}</div>
                     <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
@@ -169,52 +165,28 @@ function deleteRace(index) {
 function showAddRaceModal() {
     const presetContainer = document.getElementById("presetRaces");
     presetContainer.innerHTML = "<p><strong>Готовые варианты:</strong></p>";
-
+    
     const presets = [
-        {name:"СПРИНТ", sub:"Асфальт", icon:"sprint.png", color:"#ff2e88", isImage: true},
-        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"offroad.png", color:"#ff9500", isImage: true},
-        {name:"ДРИФТ", sub:"Трасса", icon:"drift.png", color:"#9b4dff", isImage: true},
-        {name:"ДРАГ", sub:"Прямая", icon:"🏁", color:"#00bfff"},
+        {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88"},
+        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500"},
+        {name:"ДРИФТ", sub:"Трасса", icon:"💨", color:"#9b4dff"},
+        {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff"},
         {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
-        // Добавляй сюда свои варианты
+        {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00"},
+        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88"},
+        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500"},
     ];
 
     presets.forEach(p => {
         const btn = document.createElement("button");
         btn.className = "preset-btn";
-
-        if (p.isImage) {
-            btn.innerHTML = `
-                <div class="icon-container">
-                    <img src="${p.icon}" class="preset-icon" alt="${p.name}">
-                </div>
-                <div class="preset-text">
-                    ${p.name}
-                    <small>${p.sub}</small>
-                </div>
-            `;
-        } else {
-            btn.innerHTML = `
-                <div class="icon-container">
-                    <span class="preset-emoji">${p.icon}</span>
-                </div>
-                <div class="preset-text">
-                    ${p.name}
-                    <small>${p.sub}</small>
-                </div>
-            `;
-        }
-
-        btn.onclick = () => {
-            races.push({
-                ...p,
-                id: Date.now() // чтобы у каждого заезда был уникальный id
-            });
-            closeModal();
-            renderTable();
-            updateAllResults();
+        btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
+        btn.onclick = () => { 
+            races.push(p); 
+            closeModal(); 
+            renderTable(); 
+            updateAllResults(); 
         };
-
         presetContainer.appendChild(btn);
     });
 
