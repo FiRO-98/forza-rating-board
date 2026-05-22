@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forza Horizon 6 Rating Board</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="title">
+    <h1>Таблица лидеров</h1>
+</div>
+
+<div class="controls">
+    <button class="reset-btn" onclick="resetRatings()">Сбросить оценки</button>
+    <button class="add-btn" onclick="addPlayer()">+ Добавить участника</button>
+    <button class="add-race-btn" onclick="showAddRaceModal()">+ Добавить заезд</button>
+</div>
+
+<table class="board">
+    <thead>
+        <tr>
+            <th>УЧАСТНИК</th>
+            <th>ВАРИАНТЫ ЗАЕЗДА<br><span style="font-size:14px;opacity:0.7;">(оценки от 1 до 5)</span></th>
+            <th ondblclick="editCategory(0, this)" id="cat-header-0">КУЗОВ</th>
+            <th ondblclick="editCategory(1, this)" id="cat-header-1">ПОКРАСКА</th>
+            <th ondblclick="editCategory(2, this)" id="cat-header-2">САЛОН</th>
+            <th>ИТОГОВЫЙ<br>РЕЗУЛЬТАТ</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<div class="footer">
+    Выставляй оценки от 1 до 5 ⭐ по каждому пункту
+</div>
+
+<!-- Modal -->
+<div id="addRaceModal" class="modal">
+    <div class="modal-content">
+        <h2>Добавить вариант заезда</h2>
+        <div id="presetRaces"></div>
+        <div class="or">— или создай свой —</div>
+        <input type="text" id="customRaceName" placeholder="Название заезда" class="modal-input">
+        <input type="text" id="customRaceSub" placeholder="Подзаголовок" class="modal-input">
+        <div class="modal-buttons">
+            <button onclick="addCustomRace()" class="confirm-btn">Добавить</button>
+            <button onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Данные
+let players = ["Участник 1", "Участник 2", "Участник 3"];
+let categories = ["КУЗОВ", "ПОКРАСКА", "САЛОН"];
+
+// Начинаем с пустого списка заездов
+let races = [];
+
+const playerColors = ["#ff2e88", "#ff9500", "#00bfff"];
+const body = document.getElementById("tableBody");
+
+// Получить текущий максимум
+function getMaxScore() {
+    return (races.length + 3) * 5;
+}
+
+// === Рендер ===
+function renderTable() {
+    body.innerHTML = "";
+    
+    players.forEach((player, pIndex) => {
+        const tr = document.createElement("tr");
+        tr.id = `row-${pIndex}`;
+        tr.style.borderLeft = `6px solid ${playerColors[pIndex % playerColors.length]}`;
+
+        tr.innerHTML += `<td><div class="player" ondblclick="editPlayerName(${pIndex}, this)">${player}</div></td>`;
+
+        let racesHTML = '<div class="races-grid">';
+        races.forEach((race, rIndex) => {
+            const nameClass = race.name.length > 18 ? 'race-name long' : 'race-name';
+            racesHTML += `
+                <div class="race-block">
+                    <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
+                    <div class="race-icon" style="color:${race.color}">${race.icon}</div>
+                    <div class="${nameClass}">${race.name}</div>
+                    <div class="race-sub">${race.sub}</div>
+                    <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
+                </div>
+            `;
+        });
+        racesHTML += '</div>';
+        tr.innerHTML += `<td>${racesHTML}</td>`;
+
+        tr.innerHTML += `
+            <td><div class="stars category-stars" data-group="cat-0-${pIndex}"></div></td>
+            <td><div class="stars category-stars" data-group="cat-1-${pIndex}"></div></td>
+            <td><div class="stars category-stars" data-group="cat-2-${pIndex}"></div></td>
+        `;
+
+        tr.innerHTML += `
+            <td>
+                <div class="result-box">
+                    <div class="result" id="result-${pIndex}">0<span class="max">/${getMaxScore()}</span></div>
+                    <div class="rank" id="rank-${pIndex}">—</div>
+                </div>
+            </td>
+        `;
+
+        body.appendChild(tr);
+        createStarsInRow(pIndex);
+    });
+}
+
+function createStarsInRow(pIndex) {
+    const row = document.getElementById(`row-${pIndex}`);
+    row.querySelectorAll(".stars").forEach(container => {
+        container.innerHTML = "";
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement("span");
+            star.className = "star";
+            star.innerHTML = "★";
+            star.dataset.value = i;
+            star.addEventListener("click", () => {
+                container.querySelectorAll(".star").forEach(s => 
+                    s.classList.toggle("active", parseInt(s.dataset.value) <= i)
+                );
+                container.dataset.rating = i;
+                updateResult(pIndex);
+            });
+            container.appendChild(star);
+        }
+    });
+}
+
+// Управление заездами
+function deleteRace(index) {
+    if (confirm(`Удалить заезд "${races[index].name}"?`)) {
+        races.splice(index, 1);
+        renderTable();
+        updateAllResults();
+    }
+}
+
+function showAddRaceModal() {
+    const presetContainer = document.getElementById("presetRaces");
+    presetContainer.innerHTML = "<p><strong>Готовые варианты:</strong></p>";
+    
+    const presets = [
+        {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88"},
+        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500"},
+        {name:"ДРИФТ", sub:"Трасса", icon:"💨", color:"#9b4dff"},
+        {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff"},
+        {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
+        {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00"},
+        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88"},
+        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500"},
+    ];
+
+    presets.forEach(p => {
+        const btn = document.createElement("button");
+        btn.className = "preset-btn";
+        btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
+        btn.onclick = () => { 
+            races.push(p); 
+            closeModal(); 
+            renderTable(); 
+            updateAllResults(); 
+        };
+        presetContainer.appendChild(btn);
+    });
+
+    document.getElementById("addRaceModal").style.display = "flex";
+}
+
+function addCustomRace() {
+    const name = document.getElementById("customRaceName").value.trim();
+    if (name) {
+        races.push({
+            name: name.toUpperCase(),
+            sub: document.getElementById("customRaceSub").value.trim() || "Своя трасса",
+            icon: "🏁",
+            color: "#00bfff"
+        });
+        closeModal();
+        renderTable();
+        updateAllResults();
+    }
+}
+
+function closeModal() {
+    document.getElementById("addRaceModal").style.display = "none";
+    document.getElementById("customRaceName").value = "";
+    document.getElementById("customRaceSub").value = "";
+}
+
+// Остальные функции (update, edit и т.д.)
+function updateResult(pIndex) {
+    const row = document.getElementById(`row-${pIndex}`);
+    if (!row) return;
+    let total = 0;
+    row.querySelectorAll(".stars").forEach(el => total += Number(el.dataset.rating || 0));
+    document.getElementById(`result-${pIndex}`).innerHTML = `${total}<span class="max">/${getMaxScore()}</span>`;
+    updateRanks();
+}
+
+function updateAllResults() {
+    players.forEach((_, i) => updateResult(i));
+    updateRanks();
+}
+
+function updateRanks() {
+    document.querySelectorAll("tr").forEach(r => r.classList.remove("top-player"));
+    let results = players.map((_, i) => {
+        let total = 0;
+        const row = document.getElementById(`row-${i}`);
+        if (row) row.querySelectorAll(".stars").forEach(el => total += Number(el.dataset.rating || 0));
+        return {index: i, total};
+    });
+
+    results.sort((a,b) => b.total - a.total);
+    const maxScore = results[0]?.total || 0;
+
+    if (maxScore > 0) {
+        const leaders = results.filter(r => r.total === maxScore);
+        if (leaders.length === 1) {
+            document.getElementById(`row-${leaders[0].index}`).classList.add("top-player");
+        }
+    }
+
+    results.forEach((res, pos) => {
+        const el = document.getElementById(`rank-${res.index}`);
+        if (el) el.innerHTML = pos === 0 ? "🏆 1 место" : pos === 1 ? "🥈 2 место" : pos === 2 ? "🥉 3 место" : `${pos+1} место`;
+    });
+}
+
+function editPlayerName(index, element) {
+    const input = document.createElement("input");
+    input.type = "text"; input.value = players[index]; input.className = "player-edit";
+    input.onblur = () => { if(input.value.trim()) players[index] = input.value.trim(); renderTable(); updateAllResults(); };
+    input.onkeydown = e => { if(e.key==="Enter") input.blur(); if(e.key==="Escape") renderTable(); };
+    element.replaceWith(input); input.focus(); input.select();
+}
+
+function editCategory(index, element) {
+    const input = document.createElement("input");
+    input.type = "text"; input.value = categories[index]; input.className = "category-edit";
+    input.onblur = () => { if(input.value.trim()) categories[index] = input.value.trim().toUpperCase(); updateCategoryHeaders(); };
+    input.onkeydown = e => { if(e.key==="Enter") input.blur(); if(e.key==="Escape") updateCategoryHeaders(); };
+    element.innerHTML = ''; element.appendChild(input); input.focus(); input.select();
+}
+
+function updateCategoryHeaders() {
+    document.getElementById("cat-header-0").innerHTML = categories[0];
+    document.getElementById("cat-header-1").innerHTML = categories[1];
+    document.getElementById("cat-header-2").innerHTML = categories[2];
+}
+
+function addPlayer() {
+    const name = prompt("Имя нового участника:", `Участник ${players.length + 1}`);
+    if (name?.trim()) {
+        players.push(name.trim());
+        renderTable();
+        updateAllResults();
+    }
+}
+
+function resetRatings() {
+    document.querySelectorAll(".star").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".stars").forEach(s => s.dataset.rating = "0");
+    players.forEach((_, i) => {
+        const res = document.getElementById(`result-${i}`);
+        if(res) res.innerHTML = `0<span class="max">/${getMaxScore()}</span>`;
+        const rank = document.getElementById(`rank-${i}`);
+        if(rank) rank.innerHTML = "—";
+    });
+    updateRanks();
+}
+
+// Инициализация
+renderTable();
+updateCategoryHeaders();
+updateAllResults();
+</script>
+</body>
+</html>
