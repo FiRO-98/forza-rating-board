@@ -2,8 +2,6 @@
 
 Интерактивная таблица для оценки участников в стиле Forza Horizon 6.
 
-![Forza Horizon 6](https://github.com/FiRO-98/forza-rating-board/blob/main/preview.jpg)
-
 ## ✨ Возможности
 
 - Добавление и редактирование участников (двойной клик по имени)
