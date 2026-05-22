@@ -59,8 +59,6 @@
     </div>
 </div>
 
-<input type="file" id="customImageInput" accept="image/*" style="display:none" onchange="handleCustomImage(event)">
-
 <script>
 // Данные
 let players = ["Участник 1", "Участник 2", "Участник 3"];
@@ -92,19 +90,14 @@ function renderTable() {
         races.forEach((race, rIndex) => {
             const nameClass = race.name.length > 18 ? 'race-name long' : 'race-name';
             racesHTML += `
-    <div class="race-block">
-        <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
-        
-        ${race.image ? 
-            `<img src="${race.image}" class="race-image" alt="${race.name}">` : 
-            `<div class="race-icon" style="color:${race.color}">${race.icon}</div>`
-        }
-        
-        <div class="${nameClass}">${race.name}</div>
-        <div class="race-sub">${race.sub}</div>
-        <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
-    </div>
-`;
+                <div class="race-block">
+                    <button class="delete-race" onclick="deleteRace(${rIndex})" title="Удалить">✕</button>
+                    <div class="race-icon" style="color:${race.color}">${race.icon}</div>
+                    <div class="${nameClass}">${race.name}</div>
+                    <div class="race-sub">${race.sub}</div>
+                    <div class="stars" data-group="race-${pIndex}-${rIndex}"></div>
+                </div>
+            `;
         });
         racesHTML += '</div>';
         tr.innerHTML += `<td>${racesHTML}</td>`;
@@ -133,28 +126,18 @@ function createStarsInRow(pIndex) {
     const row = document.getElementById(`row-${pIndex}`);
     row.querySelectorAll(".stars").forEach(container => {
         container.innerHTML = "";
-        
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement("span");
             star.className = "star";
             star.innerHTML = "★";
             star.dataset.value = i;
-            
             star.addEventListener("click", () => {
-                const rating = i;
-                
-                // Активируем нужное количество звёзд
-                container.querySelectorAll(".star").forEach(s => {
-                    s.classList.toggle("active", parseInt(s.dataset.value) <= rating);
-                });
-                
-                // Сохраняем рейтинг
-                container.dataset.rating = rating;
-                
-                // Обновляем результат
+                container.querySelectorAll(".star").forEach(s => 
+                    s.classList.toggle("active", parseInt(s.dataset.value) <= i)
+                );
+                container.dataset.rating = i;
                 updateResult(pIndex);
             });
-            
             container.appendChild(star);
         }
     });
@@ -172,47 +155,30 @@ function deleteRace(index) {
 function showAddRaceModal() {
     const presetContainer = document.getElementById("presetRaces");
     presetContainer.innerHTML = "<p><strong>Готовые варианты:</strong></p>";
-
+    
     const presets = [
-        {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88", image: "https://i.imgur.com/8v5Zf2k.png"},
-        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500", image: "https://i.imgur.com/2vL9k3m.png"},
-        {name:"ДРИФТ", sub:"Трасса", icon:"💨", color:"#9b4dff", image: "https://i.imgur.com/5tR7pLq.png"},
-        {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff", image: "https://i.imgur.com/JfK8mXv.png"},
-        {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d", image: "https://i.imgur.com/9pL2xQm.png"},
-        {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00", image: "https://i.imgur.com/7vN3pRt.png"},
-        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88", image: "https://i.imgur.com/XkP9mZv.png"},
-        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500", image: "https://i.imgur.com/4qW8vLm.png"},
+        {name:"СПРИНТ", sub:"Асфальт", icon:"🏁", color:"#ff2e88"},
+        {name:"БЕЗДОРОЖЬЕ", sub:"Грязь / Гравий", icon:"🏔️", color:"#ff9500"},
+        {name:"ДРИФТ", sub:"Трасса", icon:"💨", color:"#9b4dff"},
+        {name:"ДРАГ", sub:"Прямая", icon:"🚦", color:"#00bfff"},
+        {name:"КРУГ", sub:"Техническая трасса", icon:"🔄", color:"#00ff9d"},
+        {name:"TIME ATTACK", sub:"На время", icon:"⏱️", color:"#ffff00"},
+        {name:"ГОНКА", sub:"Классика", icon:"🏎️", color:"#ff2e88"},
+        {name:"ХИЛ КЛИМБ", sub:"В гору", icon:"⛰️", color:"#ff9500"},
     ];
 
     presets.forEach(p => {
         const btn = document.createElement("button");
         btn.className = "preset-btn";
-        btn.innerHTML = `
-            <img src="${p.image}" class="preset-image" alt="">
-            <div>
-                <strong>${p.name}</strong><br>
-                <small>${p.sub}</small>
-            </div>
-        `;
+        btn.innerHTML = `${p.icon} ${p.name} <small>${p.sub}</small>`;
         btn.onclick = () => { 
-            races.push({...p}); 
+            races.push(p); 
             closeModal(); 
             renderTable(); 
             updateAllResults(); 
         };
         presetContainer.appendChild(btn);
     });
-
-    // Кнопка своего заезда
-    const customSection = document.createElement("div");
-    customSection.innerHTML = `<p style="margin:20px 0 10px; text-align:center; opacity:0.7;">— или создай свой —</p>`;
-    presetContainer.appendChild(customSection);
-
-    const customBtn = document.createElement("button");
-    customBtn.className = "preset-btn custom-image-btn";
-    customBtn.innerHTML = "🖼️ Загрузить свою картинку";
-    customBtn.onclick = () => document.getElementById("customImageInput").click();
-    presetContainer.appendChild(customBtn);
 
     document.getElementById("addRaceModal").style.display = "flex";
 }
@@ -361,33 +327,6 @@ async function saveAsImage() {
         document.body.removeChild(container);
     }
 }
-
-async function handleCustomImage(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        const imageUrl = ev.target.result;
-
-        const name = prompt("Название заезда:", "МОЙ ЗАЕЗД") || "МОЙ ЗАЕЗД";
-        const sub = prompt("Подзаголовок:", "Своя трасса") || "Своя трасса";
-
-        races.push({
-            name: name.toUpperCase(),
-            sub: sub,
-            icon: "",
-            color: "#ffffff",
-            image: imageUrl
-        });
-
-        closeModal();
-        renderTable();
-        updateAllResults();
-    };
-    reader.readAsDataURL(file);
-}
-    
 </script>
 </body>
 </html>
