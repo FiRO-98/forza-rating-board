@@ -365,3 +365,15 @@ td {
     vertical-align: middle;   /* ← важно для центрирования по высоте */
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
+
+.save-btn {
+    background: linear-gradient(135deg, #00ff9d, #00bfff);
+    color: #000;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 255, 157, 0.3);
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 157, 0.4);
+}
